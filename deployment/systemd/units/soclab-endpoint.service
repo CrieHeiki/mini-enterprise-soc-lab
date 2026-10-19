@@ -1,0 +1,18 @@
+[Unit]
+Description=SOC Lab - Windows Endpoint Event Correlation
+Wants=wazuh-manager.service soclab-adapter.service
+After=wazuh-manager.service soclab-adapter.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+WorkingDirectory=/opt/soclab
+ExecStart=/usr/bin/python3 -u /opt/soclab/soclab_live_monitor.py --archive /var/ossec/logs/archives/archives.json --db /var/lib/soclab-monitor/events.sqlite --output /var/log/soclab-findings.jsonl --agent WIN10-ENDPOINT01 --poll 2
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

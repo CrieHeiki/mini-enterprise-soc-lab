@@ -1,0 +1,294 @@
+<group name="soc_lab,windows,">
+
+  <rule id="100201"
+        level="10"
+        frequency="5"
+        timeframe="60">
+
+    <if_matched_sid>60122</if_matched_sid>
+
+    <same_field>win.eventdata.targetUserName</same_field>
+
+    <description>
+      SOC-LAB: Multiple failed logons detected for account
+      $(win.eventdata.targetUserName)
+    </description>
+
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+
+    <group>authentication_failed,bruteforce,</group>
+  </rule>
+
+  <rule id="100210" level="3">
+
+    <if_group>sysmon_event1</if_group>
+
+    <field name="win.eventdata.image"
+           type="pcre2">(?i)\\(powershell|pwsh)\.exe$</field>
+
+    <description>
+      SOC-LAB: PowerShell process executed by
+      $(win.eventdata.user)
+    </description>
+
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+
+    <group>powershell_execution,</group>
+  </rule>
+
+  <rule id="100211" level="10">
+
+    <if_sid>100210,92057</if_sid>
+
+    <field name="win.eventdata.image"
+         type="pcre2">(?i)\\(powershell|pwsh)\.exe$</field>
+
+    <field name="win.eventdata.commandLine"
+         type="pcre2">(?i)(?:-enc(?:odedcommand)?\b|FromBase64String)</field>
+
+    <description>
+         SOC-LAB: Encoded PowerShell execution detected
+    </description>
+
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+
+    <group>powershell_execution,suspicious_command,</group>
+  </rule>
+  <rule id="100212" level="7">
+
+    <if_sid>92101</if_sid>
+
+    <field name="win.eventdata.image"
+           type="pcre2">(?i)\\(powershell|pwsh)\.exe$</field>
+
+    <description>
+      SOC-LAB: PowerShell initiated network connection to
+      $(win.eventdata.destinationIp):$(win.eventdata.destinationPort)
+    </description>
+
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+
+    <group>powershell_execution,network_connection,</group>
+  </rule>
+
+  <rule id="100220" level="7">
+
+    <if_sid>60109</if_sid>
+    <field name="win.system.eventID">^4720$</field>
+
+    <description>
+      SOC-LAB: New Windows account created:
+      $(win.eventdata.targetUserName)
+    </description>
+
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+
+    <group>account_creation,persistence,</group>
+  </rule>
+
+  <rule id="100221" level="8">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+    <field name="win.system.eventID">^4732$</field>
+
+    <description>
+      SOC-LAB: Account added to local security group
+      $(win.eventdata.targetUserName)
+    </description>
+
+    <mitre>
+      <id>T1098.007</id>
+    </mitre>
+
+    <group>account_manipulation,privilege_escalation,</group>
+  </rule>
+
+    <rule id="100230" level="8">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID" type="pcre2">^(12|13)$</field>
+
+    <field name="win.eventdata.targetObject" type="pcre2">(?i)\\Software\\Microsoft\\Windows\\CurrentVersion\\Run(Once)?(?:\\|$)</field>
+
+    <description>
+      SOC-LAB: Registry Run/RunOnce persistence location modified:
+      $(win.eventdata.targetObject)
+    </description>
+
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+
+    <group>persistence,registry_autostart,</group>
+
+  </rule>
+
+  <rule id="100231" level="8">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^11$</field>
+
+    <field name="win.eventdata.targetFilename"
+           type="pcre2">(?i)\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\</field>
+
+    <description>
+      SOC-LAB: File created in Windows Startup folder:
+      $(win.eventdata.targetFilename)
+    </description>
+
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+
+    <group>persistence,startup_folder,</group>
+
+  </rule>
+
+  <rule id="100240" level="6">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^4698$</field>
+
+    <description>
+      SOC-LAB: A new scheduled task was created
+    </description>
+
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+
+    <group>persistence,scheduled_task,</group>
+
+  </rule>
+
+  <rule id="100241" level="10">
+
+    <if_sid>100240</if_sid>
+
+    <field name="win.eventdata.taskContent"
+           type="pcre2">(?i)(powershell|pwsh|cmd\.exe|wscript|cscript|mshta)</field>
+
+    <description>
+      SOC-LAB: Scheduled task contains script or command interpreter execution
+    </description>
+
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+
+    <group>persistence,suspicious_scheduled_task,</group>
+
+  </rule>
+
+  <rule id="100250" level="7">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^4697$</field>
+
+    <description>
+      SOC-LAB: A new Windows service was installed
+    </description>
+
+    <mitre>
+      <id>T1543.003</id>
+    </mitre>
+
+    <group>persistence,windows_service,</group>
+
+  </rule>
+
+  <rule id="100251" level="10">
+
+    <if_sid>100250</if_sid>
+
+    <field name="win.eventdata.serviceFileName"
+           type="pcre2">(?i)(\\Users\\|\\AppData\\|\\Temp\\|\\Downloads\\)</field>
+
+    <description>
+      SOC-LAB: Windows service executable located in a user-writable directory
+    </description>
+
+    <mitre>
+      <id>T1543.003</id>
+    </mitre>
+
+    <group>persistence,suspicious_service,</group>
+
+  </rule>
+
+  <rule id="100260" level="12">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^1102$</field>
+
+    <description>
+      SOC-LAB: Windows Security audit log was cleared
+    </description>
+
+    <mitre>
+      <id>T1070.001</id>
+    </mitre>
+
+    <group>defense_evasion,log_clearing,</group>
+
+  </rule>
+
+  <rule id="100270" level="9">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^10$</field>
+
+    <field name="win.eventdata.targetImage"
+           type="pcre2">(?i)\\lsass\.exe$</field>
+
+    <description>
+      SOC-LAB: Process accessed LSASS memory:
+      $(win.eventdata.sourceImage)
+    </description>
+
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+
+    <group>credential_access,lsass_access,</group>
+
+  </rule>
+
+  <rule id="100280" level="9">
+
+    <decoded_as>windows_eventchannel</decoded_as>
+
+    <field name="win.system.eventID">^4104$</field>
+
+    <field name="win.eventdata.scriptBlockText"
+           type="pcre2">(?i)(FromBase64String|EncodedCommand|Invoke-Expression|IEX\s*\()</field>
+
+    <description>
+      SOC-LAB: Suspicious PowerShell script block content detected
+    </description>
+
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+
+    <group>powershell_execution,suspicious_scriptblock,</group>
+
+  </rule>
+
+</group>

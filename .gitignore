@@ -1,0 +1,54 @@
+# Never publish raw evidence, archives, incident logs, or databases.
+**/evidence/
+*.jsonl
+*.evtx
+*.pcap
+*.pcapng
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.gz
+*.zip
+
+# Runtime, state and local virtual environments.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+state/
+.cache/
+.pytest_cache/
+
+# Private settings and key material.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.kdbx
+id_rsa*
+id_ed25519*
+secrets/
+credentials/
+private/
+
+# Workstation files.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# OS / VM exports and large local dumps.
+*.vdi
+*.vmdk
+*.ova
+*.ovf
+*.vbox
+*.iso
+*.dump
+*.bak

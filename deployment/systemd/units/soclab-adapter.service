@@ -1,0 +1,18 @@
+[Unit]
+Description=SOC Lab - Finding Adapter to Wazuh JSON log
+Wants=wazuh-manager.service
+After=wazuh-manager.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+WorkingDirectory=/opt/soclab
+ExecStart=/usr/bin/python3 -u /opt/soclab/soclab_finding_adapter.py --endpoint /var/log/soclab-findings.jsonl --ad /var/log/soclab-ad-findings.jsonl --output /var/log/soclab-alerts.jsonl --db /var/lib/soclab-adapter/adapter.sqlite --poll 2
+Restart=on-failure
+RestartSec=5
+UMask=0022
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
